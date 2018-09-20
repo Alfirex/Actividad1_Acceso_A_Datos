@@ -1,6 +1,7 @@
 package gestionficherosapp;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 import gestionficheros.FormatoVistas;
@@ -61,21 +62,56 @@ public class GestionFicherosImpl implements GestionFicheros {
 	public void creaCarpeta(String arg0) throws GestionFicherosException {
 		File file = new File(carpetaDeTrabajo,arg0);
 		//que se pueda escribir -> lanzará una excepción
+		if (!carpetaDeTrabajo.canWrite()) {
+			throw new GestionFicherosException("Error. No tienes permisos para crear la carpeta");
+		}
 		//que no exista -> lanzará una excepción
+		if(file.exists()) {
+			throw new GestionFicherosException("Error. La carpeta ya existe.");
+		}
 		//crear la carpeta -> lanzará una excepción
+		if(!file.mkdir()) {
+			throw new GestionFicherosException("Error. No se ha podido crear la carpeta.");
+		}
+		
 		actualiza();
 	}
 
 	@Override
 	public void creaFichero(String arg0) throws GestionFicherosException {
+		File file = new File(carpetaDeTrabajo,arg0);
 		// TODO Auto-generated method stub
+		if (!carpetaDeTrabajo.canWrite()) {
+			throw new GestionFicherosException("Error. No tienes permisos para crear el fichero");
+		}
+		//que no exista -> lanzará una excepción
+		if(file.exists()) {
+			throw new GestionFicherosException("Error. El fichero ya existe.");
+		}
+		//crear la carpeta -> lanzará una excepción
+		try {
+			file.createNewFile();
+		} catch (IOException e) {
+			throw new GestionFicherosException("Error. El fichero ya existe.");
+		}
+		actualiza();
 
 	}
 
 	@Override
 	public void elimina(String arg0) throws GestionFicherosException {
 		// TODO Auto-generated method stub
-
+		File file = new File(carpetaDeTrabajo, arg0);
+		if (!carpetaDeTrabajo.canWrite()) {
+			throw new GestionFicherosException("Error. No tienes permisos para eliminar");
+		}
+		if(file.exists()) {
+			file.delete();
+		}
+		else {
+			throw new GestionFicherosException("Error. El elemento que quieres eliminar no existe.");
+		}
+		actualiza();
 	}
 
 	@Override
@@ -173,11 +209,8 @@ public class GestionFicherosImpl implements GestionFicheros {
 			strBuilder.append("Espacio Disponible"+"\n");
 			strBuilder.append(file.getUsableSpace()+" Bytes"+"\n");
 			strBuilder.append("Espacio total"+"\n");
-			strBuilder.append(file.getTotalSpace()+" Bytes"+"\n");
-			
-			
-			
-			
+			strBuilder.append(file.getTotalSpace()+" Bytes"+"\n");			
+							
 		}else {//En el caso que sea un fichero
 			strBuilder.append("Es un fichero."+"\n");
 		//Si es un fichero: Tamaño en bytes
@@ -245,10 +278,20 @@ public class GestionFicherosImpl implements GestionFicheros {
 	}
 
 	@Override
-	public void renombra(String arg0, String arg1)
-			throws GestionFicherosException {
+	public void renombra(String arg0, String arg1) throws GestionFicherosException {
 		// TODO Auto-generated method stub
-
+		File file = new File(carpetaDeTrabajo, arg0);
+		File newFile = new File(carpetaDeTrabajo, arg1);
+		if(newFile.exists()) {
+			throw new GestionFicherosException("El nombre del fichero ya existe");
+		}
+		if (!file.exists()) {
+			throw new GestionFicherosException("Error. No se ha encontrado el fichero");
+		}else {
+			 boolean result = file.renameTo(newFile);
+		}
+		
+		actualiza();
 	}
 
 	@Override
